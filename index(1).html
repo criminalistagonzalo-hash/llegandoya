@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLEGANDOYA | Cotizador</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f5f7;color:#202124}
+header{background:#fff;border-bottom:1px solid #e5e5e5}
+.navbar{max-width:1100px;margin:auto;height:76px;padding:0 20px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:30px;font-weight:800;letter-spacing:-1.5px}.logo span{color:#f5a400}
+.menu a{margin-left:25px;text-decoration:none;color:#333;font-size:14px;font-weight:600}
+.hero{background:#111827;color:#fff;text-align:center;padding:50px 20px 70px}
+.hero h1{margin:0 0 10px;font-size:38px}.hero p{margin:0;color:#d1d5db;font-size:16px}
+.contenedor{max-width:900px;margin:-35px auto 50px;padding:0 20px}
+.cotizador{background:#fff;border-radius:14px;padding:30px;box-shadow:0 8px 30px rgba(0,0,0,.10)}
+.cotizador h2{margin:0 0 8px;font-size:25px}.descripcion{margin:0 0 28px;color:#6b7280}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.campo{margin-bottom:18px}
+.campo label{display:block;margin-bottom:7px;font-size:14px;font-weight:700}
+.campo input{width:100%;height:48px;padding:0 13px;border:1px solid #d4d7dc;border-radius:7px;font-size:15px;outline:none}
+.campo input:focus{border-color:#f5a400}
+.boton-calcular{width:100%;height:50px;margin-top:5px;border:none;border-radius:7px;background:#111827;color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+.boton-calcular:hover{background:#1f2937}
+.resultado-distancia{display:none;margin-top:22px;padding:18px;background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px}
+.resultado-distancia.mostrar{display:block}.resultado-distancia strong{font-size:18px}
+.retorno{display:flex;align-items:center;gap:10px;margin-top:18px;padding:15px;background:#fff8e8;border:1px solid #f2d58c;border-radius:8px}
+.retorno input{width:19px;height:19px;accent-color:#f5a400}.retorno label{margin:0;font-weight:600;cursor:pointer}
+.cotizacion{display:none;margin-top:25px;padding-top:22px;border-top:1px solid #e5e7eb}.cotizacion.mostrar{display:block}
+.linea{display:flex;justify-content:space-between;padding:9px 0;color:#555}
+.total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:18px;border-top:2px solid #222}
+.total span{font-size:18px;font-weight:800}.total strong{font-size:30px}
+.boton-whatsapp{width:100%;height:52px;margin-top:25px;border:none;border-radius:7px;background:#f5a400;color:#111;font-size:16px;font-weight:800;cursor:pointer}
+.tarifas{margin-top:25px;padding:18px;background:#f8f9fa;border-radius:8px;font-size:14px}.tarifas h3{margin-top:0}.tarifas p{margin:7px 0;color:#555}
+.mensaje{display:none;margin-top:15px;padding:13px;border-radius:7px;font-size:14px}
+.mensaje.error{display:block;background:#fff0f0;color:#a00000;border:1px solid #ffcaca}.mensaje.cargando{display:block;background:#f4f6f8;color:#555}
+footer{text-align:center;padding:25px;color:#777;font-size:13px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.menu{display:none}.hero h1{font-size:30px}.cotizador{padding:22px}}
+</style>
+</head>
+<body>
+<header><div class="navbar">
+<div class="logo">LLEGANDO<span>YA</span></div>
+<div class="menu"><a href="#">Inicio</a><a href="#">Servicios</a><a href="#">Cotizar</a><a href="#">Contacto</a></div>
+</div></header>
+
+<section class="hero"><h1>Cotiza tu servicio</h1><p>Calcula el valor de tu despacho de forma rápida y sencilla.</p></section>
+
+<main class="contenedor">
+<div class="cotizador">
+<h2>Solicita tu cotización</h2>
+<p class="descripcion">Ingresa el origen y destino del servicio.</p>
+
+<div class="grid">
+<div class="campo"><label for="origen">Dirección de origen</label><input id="origen" type="text" placeholder="Ej.: Agua 1169, Maipú"></div>
+<div class="campo"><label for="destino">Dirección de destino</label><input id="destino" type="text" placeholder="Ej.: Av. La Dehesa 181"></div>
+</div>
+
+<button class="boton-calcular" onclick="calcularRuta()">CALCULAR TARIFA</button>
+<div id="mensaje" class="mensaje"></div>
+
+<div id="resultadoDistancia" class="resultado-distancia">
+Distancia estimada: <strong id="distanciaTexto">0 km</strong>
+</div>
+
+<div class="retorno">
+<input type="checkbox" id="retorno" onchange="actualizarPrecio()">
+<label for="retorno">Necesito retorno al punto de origen (+$650)</label>
+</div>
+
+<div id="cotizacion" class="cotizacion">
+<div class="linea"><span>Tarifa base 1–8 km</span><strong>$6.500</strong></div>
+<div class="linea"><span>Kilómetros adicionales</span><strong id="valorAdicional">$0</strong></div>
+<div class="linea"><span>Retorno</span><strong id="valorRetorno">$0</strong></div>
+<div class="linea"><span>Distancia</span><strong id="distanciaResumen">0 km</strong></div>
+<div class="total"><span>Total estimado</span><strong id="total">$6.500</strong></div>
+<button class="boton-whatsapp" onclick="solicitarServicio()">SOLICITAR SERVICIO</button>
+</div>
+
+<div class="tarifas">
+<h3>Tarifas LLEGANDOYA</h3>
+<p><strong>1 a 8 km:</strong> $6.500</p>
+<p><strong>Km adicional:</strong> $780</p>
+<p><strong>Retorno:</strong> $650</p>
+</div>
+</div>
+</main>
+
+<footer>LLEGANDOYA · Servicios de logística y entrega</footer>
+
+<script>
+const TARIFA_BASE=6500, KM_BASE=8, TARIFA_KM_ADICIONAL=780, TARIFA_RETORNO=650;
+let distanciaCalculada=0;
+
+function pesos(valor){return "$"+Math.round(valor).toLocaleString("es-CL")}
+function mostrarMensaje(texto,tipo){const m=document.getElementById("mensaje");m.textContent=texto;m.className="mensaje "+tipo}
+function ocultarMensaje(){document.getElementById("mensaje").className="mensaje"}
+
+async function calcularRuta(){
+ const origen=document.getElementById("origen").value.trim();
+ const destino=document.getElementById("destino").value.trim();
+ if(!origen||!destino){mostrarMensaje("Ingresa el origen y el destino.","error");return}
+ mostrarMensaje("Calculando distancia...","cargando");
+ try{
+  const o=await geocodificar(origen), d=await geocodificar(destino);
+  const metros=await obtenerRuta(o,d);
+  distanciaCalculada=Math.round((metros/1000)*10)/10;
+  document.getElementById("distanciaTexto").textContent=distanciaCalculada+" km";
+  document.getElementById("distanciaResumen").textContent=distanciaCalculada+" km";
+  document.getElementById("resultadoDistancia").classList.add("mostrar");
+  document.getElementById("cotizacion").classList.add("mostrar");
+  ocultarMensaje(); actualizarPrecio();
+ }catch(e){console.error(e);mostrarMensaje("No fue posible calcular la ruta. Revisa las direcciones e inténtalo nuevamente.","error")}
+}
+
+async function geocodificar(direccion){
+ const url="https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=cl&q="+encodeURIComponent(direccion+", Chile");
+ const r=await fetch(url,{headers:{"Accept":"application/json"}});
+ if(!r.ok)throw new Error("Error geocodificando");
+ const datos=await r.json();
+ if(!datos.length)throw new Error("Dirección no encontrada");
+ return {lat:parseFloat(datos[0].lat),lon:parseFloat(datos[0].lon)}
+}
+
+async function obtenerRuta(o,d){
+ const url="https://router.project-osrm.org/route/v1/driving/"+o.lon+","+o.lat+";"+d.lon+","+d.lat+"?overview=false";
+ const r=await fetch(url);
+ if(!r.ok)throw new Error("Error de ruta");
+ const datos=await r.json();
+ if(!datos.routes?.length)throw new Error("Ruta no encontrada");
+ return datos.routes[0].distance;
+}
+
+function actualizarPrecio(){
+ if(!distanciaCalculada)return;
+ const adicional=distanciaCalculada>KM_BASE?(distanciaCalculada-KM_BASE)*TARIFA_KM_ADICIONAL:0;
+ const retorno=document.getElementById("retorno").checked?TARIFA_RETORNO:0;
+ document.getElementById("valorAdicional").textContent=pesos(adicional);
+ document.getElementById("valorRetorno").textContent=pesos(retorno);
+ document.getElementById("total").textContent=pesos(TARIFA_BASE+adicional+retorno);
+}
+
+function solicitarServicio(){
+ const o=document.getElementById("origen").value.trim(), d=document.getElementById("destino").value.trim();
+ if(!o||!d||!distanciaCalculada){alert("Primero calcula la tarifa.");return}
+ const retorno=document.getElementById("retorno").checked?"Sí":"No";
+ const total=document.getElementById("total").textContent;
+ const telefono="569XXXXXXXX";
+ const mensaje="Hola LLEGANDOYA.%0A%0AQuiero solicitar un servicio.%0A%0AORIGEN:%0A"+encodeURIComponent(o)+"%0A%0ADESTINO:%0A"+encodeURIComponent(d)+"%0A%0ADISTANCIA: "+distanciaCalculada+" km%0ARETORNO: "+retorno+"%0A%0AVALOR ESTIMADO: "+encodeURIComponent(total);
+ window.open("https://wa.me/"+telefono+"?text="+mensaje,"_blank");
+}
+</script>
+</body>
+</html>
